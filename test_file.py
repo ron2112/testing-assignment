@@ -4,6 +4,7 @@ import time
 
 from Lib.test.test_copy import order_comparisons
 
+from conftest import skip_register_details
 from data.configuration import Configuration
 from pageobjects.dashboard_page_actions import DashboardPageActions
 from pageobjects.register_page_actions import RegisterPageActions
@@ -80,6 +81,43 @@ class TestRegister:
         finally:
             self.driver.quit()
 
-    # @pytest.mark(order=4)
-    # @pytest.mark.registration
-    # def test_04_
+    @pytest.mark(order=4)
+    @pytest.mark.registration
+    def test_04_skip_fields(self, skip_register_details):
+        try:
+            self.driver = skip_register_details
+            rpa = RegisterPageActions(driver=self.driver)
+
+            rpa.register_user()
+
+            has_missing_fields = rpa.check_skipped_field()
+            if has_missing_fields:
+                logger.error("First name, last name, email password all fields need to be provided")
+                print("First name, last name, email password all fields need to be provided")
+            else:
+                raise AssertionError("Skip first name, last name, email or password to run the testcase for missing required fields")
+        except Exception as e:
+            raise AssertionError(f"An error occurred: {e}")
+        finally:
+            self.driver.quit()
+
+    @pytest.mark(order=5)
+    @pytest.mark.registration
+    def test_05_invalid_email(self, check_invalid_email):
+        try:
+            self.driver = check_invalid_email
+            rpa = RegisterPageActions(driver=self.driver)
+
+            rpa.register_user()
+
+            is_valid_email = rpa.check_valid_email(Configuration.invalid_email)
+
+            if not is_valid_email:
+                logger.error("Please provide a valid email")
+                print("Please provide a valid email")
+            else:
+                raise AssertionError("Provide an invalid email address to run the testcase for checking invalid email handling")
+        except Exception as e:
+            raise AssertionError(f"An error occurred: {e}")
+        finally:
+            self.driver.quit()
