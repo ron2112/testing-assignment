@@ -4,6 +4,7 @@ from pathlib import Path
 from selenium import webdriver
 
 from data.configuration import Configuration
+from pageobjects.login_page_actions import LoginPageActions
 from pageobjects.register_page_actions import RegisterPageActions
 from utilities.utils import Utils
 
@@ -69,6 +70,25 @@ def check_invalid_email(chrome_driver):
     register_page.send_phone(Configuration.phone_number)
     register_page.send_email(Configuration.invalid_email)
     register_page.send_password(Configuration.password)
+    return driver
+
+@pytest.fixture(scope="function")
+def fill_login_details(chrome_driver):
+    driver = chrome_driver(Configuration.web_url + Configuration.login_url)
+    login_page = LoginPageActions(driver)
+
+    email = Utils.generate_random_email()
+    login_page.send_email(email)
+    login_page.send_password(Configuration.password)
+    return driver
+
+@pytest.fixture(scope="function")
+def login_invalid_credentials(chrome_driver):
+    driver = chrome_driver(Configuration.web_url + Configuration.login_url)
+    login_page = LoginPageActions(driver)
+
+    login_page.send_email(Utils.generate_random_email())
+    login_page.send_password(Configuration.password)
     return driver
 
 @pytest.hookimpl(tryfirst=True)
